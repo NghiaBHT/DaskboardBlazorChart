@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Chart_Web.props" />
+</Project>

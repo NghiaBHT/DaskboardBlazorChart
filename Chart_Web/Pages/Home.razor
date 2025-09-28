@@ -1,0 +1,89 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<h1>Bản đồ Việt Nam - Choropleth + Scatter</h1>
+
+<ECharts @ref="_chart" Height="600px" Id="myChart" Options="_options" />
+
+@code {
+    private Chart_Web.Shared.ECharts? _chart;
+    private object? _options;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // register map JSON from wwwroot/geo/geoBoundaries-VNM-ADM2.geojson
+            await _chart!.RegisterMapFromUrlAsync("vietnam", "geo/countries.geojson");
+
+            // sample options: choropleth (map) + scatter on geo
+            _options = new
+            {
+                title = new { text = "Bản đồ Việt Nam - Dữ liệu mẫu", left = "center" },
+                tooltip = new { trigger = "item" },
+                visualMap = new
+                {
+                    min = 0,
+                    max = 1000,
+                    left = "left",
+                    top = "bottom",
+                    text = new[] { "Cao", "Thấp" },
+                    calculable = true
+                },
+                geo = new
+                {
+                    map = "vietnam",
+                    roam = true,
+                    label = new { emphasis = new { show = false } },
+                    itemStyle = new
+                    {
+                        normal = new { areaColor = "#f5f5f5", borderColor = "#999" },
+                        emphasis = new { areaColor = "#ffd7d7" }
+                    }
+                },
+                series = new object[]
+                {
+                    // choropleth series (map)
+                    new {
+                        name = "choropleth",
+                        type = "map",
+                        map = "vietnam",
+                        roam = true,
+                        emphasis = new { label = new { show = false } },
+                        data = new object[]
+                        {
+                            new { name = "Ha Noi", value = 800 },
+                            new { name = "Ho Chi Minh", value = 900 },
+                            new { name = "Da Nang", value = 600 },
+                            new { name = "Hai Phong", value = 500 },
+                            new { name = "Can Tho", value = 400 },
+                            new { name = "Bien Hoa", value = 350 },
+                            new { name = "Hue", value = 300 },
+                            new { name = "Nha Trang", value = 250 }
+                        }
+                    },
+                    // scatter on geo: [lng, lat, value]
+                    new {
+                        name = "scatter",
+                        type = "scatter",
+                        coordinateSystem = "geo",
+                        symbolSize = 12,
+                        itemStyle = new { color = "#ff3333" },
+                        data = new object[]
+                        {
+                            new object[] {105.8342, 21.0285, 150}, // Hà Nội
+                            new object[] {106.6297, 10.8231, 200}, // TP.HCM
+                            new object[] {108.2208, 16.0544, 120}, // Đà Nẵng
+                            new object[] {106.6822, 20.8449, 100}, // Hải Phòng
+                            new object[] {105.7842, 10.0452, 80}   // Cần Thơ
+                        }
+                    }
+                }
+            };
+
+            // apply options (notMerge: true replaces)
+            await _chart.SetOptionsAsync(_options, true);
+        }
+    }
+}

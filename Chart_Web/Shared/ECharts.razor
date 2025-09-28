@@ -1,0 +1,42 @@
+﻿@inject IJSRuntime JS
+
+<div id="@Id" style="width:100%;height:@Height"></div>
+
+@code {
+    [Parameter] public string Id { get; set; } = $"echarts_{Guid.NewGuid():N}";
+    [Parameter] public string Height { get; set; } = "400px";
+    [Parameter] public object Options { get; set; }
+
+    private bool _initialized;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_initialized)
+        {
+            await JS.InvokeVoidAsync("echartsInterop.init", Id, Options);
+            _initialized = true;
+            // trigger resize once
+            await JS.InvokeVoidAsync("echartsInterop.resize", Id);
+        }
+    }
+
+    public async Task SetOptionsAsync(object options, bool notMerge = false)
+    {
+        await JS.InvokeVoidAsync("echartsInterop.setOptions", Id, options, notMerge);
+    }
+
+    public async Task RegisterMapAsync(string name, object geoJson)
+    {
+        await JS.InvokeVoidAsync("echartsInterop.registerMap", name, geoJson);
+    }
+
+    public async Task RegisterMapFromUrlAsync(string name, string url)
+    {
+        await JS.InvokeVoidAsync("echartsInterop.registerMapFromUrl", name, url);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await JS.InvokeVoidAsync("echartsInterop.dispose", Id);
+    }
+}
